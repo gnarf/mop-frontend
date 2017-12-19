@@ -23,3 +23,12 @@ export const thanksLoader = () => new Promise(resolve => {
     })
   })
 })
+
+export const searchLoader = () => new Promise(resolve => {
+  require.ensure([], () => {
+    resolve({
+      // eslint-disable-next-line global-require
+      Search: require('../components/search.js')
+    })
+  })
+})
