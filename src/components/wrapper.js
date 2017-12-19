@@ -11,6 +11,7 @@ const Wrapper = ({ children }) => (
     <main className='main'>
       {children}
     </main>
+    <hr />
     <Footer />
   </div>
 )

@@ -9,12 +9,18 @@ import { actionTypes as sessionActionTypes } from '../actions/sessionActions.js'
 //     }
 // }
 
+const navState = {
+  partnerCobrand: null // or {logo, link, name}
+}
+
 const initialPetitionState = {
   petitions: {}, // keyed by slug AND petition_id for petition route
   petitionSignatures: {}, // keyed by petition slug, then page
   signatureStatus: {}, // keyed by petition_id (because form doesn't have slug)
   signatureMessages: {}, // keyed by petition_id, MessageId value from SQS post
-  topPetitions: {} // lists of petition IDs keyed by pac then megapartner
+  topPetitions: {}, // lists of petition IDs keyed by pac then megapartner
+  nextPetitions: [], // list of petition IDs that can be suggested to sign next
+  nextPetitionsLoaded: false // is nextPetitions empty because there are none to suggest or it hasn't been loaded yet?
 }
 
 const initialUserState = {
@@ -33,6 +39,42 @@ const initialUserState = {
   // identifiers: <probably a combination of signonId, token, and any other identifiers available>
 }
 
+function navReducer(state = navState, action) {
+  // the goal here is to ignore most actions
+  // and then turn the partner logo on/off depending on the state
+  // however for top petitions, and petition loading
+  // we need to see if we should show a logo or not
+  // If there are other 'megapartner' pages where we show a logo
+  // then we should add loading of their data here, as well
+  // This is a little icky, because it should relate to the view
+  // more than what data we load, but we are taking the perspective
+  // that the actions are about changing the 'presentation' state
+  // rather than the actions being pure 'model' interfaces
+  let petition = null
+  switch (action.type) {
+    case petitionActionTypes.FETCH_PETITION_SUCCESS:
+      petition = action.petition
+      break
+    case petitionActionTypes.FETCH_TOP_PETITIONS_SUCCESS:
+      petition = action.petitions[0]
+      break
+    default:
+      break
+  }
+  if (petition) {
+    const creator = ((petition._embedded && petition._embedded.creator) || {})
+    if (creator.organization_logo_image_url) {
+      return Object.assign({}, state, { partnerCobrand: {
+        logo: creator.organization_logo_image_url,
+        name: creator.organization,
+        url: creator.organization_url
+      } })
+    } // else
+    return Object.assign({}, state, { partnerCobrand: null })
+  }
+  return state
+}
+
 function petitionReducer(state = initialPetitionState, action) {
   const {
     type,
@@ -41,12 +83,11 @@ function petitionReducer(state = initialPetitionState, action) {
     page,
     signatures,
     petitions,
-    pac,
-    megapartner
+    topPetitionsKey,
+    useCache
   } = action
   let petition = {}
   let updateData = {}
-  let topPetitionsKey = ''
   if (typeof petitionWithoutSlug === 'object') {
     petition = Object.assign(petitionWithoutSlug, { slug })
   } else if (slug && typeof state.petitions[slug] !== 'undefined') {
@@ -71,6 +112,9 @@ function petitionReducer(state = initialPetitionState, action) {
       if (action.messageId) {
         updateData.signatureMessages = Object.assign(
           {}, state.signatureMessages, { [petition.petition_id]: action.messageId })
+      }
+      if (state.nextPetitionsLoaded) {
+        updateData.nextPetitions = state.nextPetitions.filter(petId => petId !== petition.petition_id)
       }
       return Object.assign({}, state, updateData)
     case petitionActionTypes.FETCH_PETITION_SIGNATURES_SUCCESS:
@@ -98,18 +142,27 @@ function petitionReducer(state = initialPetitionState, action) {
         )
       })
     case petitionActionTypes.FETCH_TOP_PETITIONS_SUCCESS:
-      topPetitionsKey = `${pac}--${megapartner}`
-      return Object.assign({}, state, {
-        petitions: petitions.reduce((addedPetitions, topPetition) => Object.assign(
-          {}, addedPetitions, {
-            [topPetition.name]: topPetition,
-            [topPetition.petition_id]: topPetition
-          }
-        ), state.petitions),
+      if (useCache) {
+        return state
+      }
+      updateData = {
+        petitions: Object.assign({}, state.petitions,
+                                 ...petitions.map((topPetition) => ({
+                                   [topPetition.name]: topPetition,
+                                   [topPetition.petition_id]: topPetition
+                                 }))),
         topPetitions: Object.assign({}, state.topPetitions, {
           [topPetitionsKey]: petitions.map(topPetition => topPetition.petition_id)
-        })
-      })
+        }),
+        nextPetitionsLoaded: true
+      }
+      updateData.nextPetitions = state.nextPetitions.concat(
+        petitions.map(topPetition => topPetition.petition_id)
+      ).filter((petId, i, list) => (
+        i === list.indexOf(petId) // make each item unique on the list
+          && !(petId in state.signatureStatus || updateData.petitions[petId].signed) // exclude signed
+      ))
+      return Object.assign({}, state, updateData)
     default:
       return state
   }
@@ -174,6 +227,7 @@ function userReducer(state = initialUserState, action) {
 }
 
 const rootReducer = combineReducers({
+  navStore: navReducer,
   petitionStore: petitionReducer,
   userStore: userReducer
 })

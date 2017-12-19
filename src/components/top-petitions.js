@@ -42,7 +42,9 @@ TopPetitions.propTypes = {
 const mapStateToProps = (store, ownProps) => {
   const { pac, megapartner } = ownProps
   const topPetitionsState = store.petitionStore.topPetitions
-  const topPetitionsKey = `${pac}--${megapartner}`
+  // topPetitionsKey must not just be truthily equal but exact
+  // eslint-disable-next-line no-unneeded-ternary
+  const topPetitionsKey = `${pac ? 1 : 0}--${megapartner ? megapartner : ''}`
   const topPetitionsProp = (
     typeof topPetitionsState[topPetitionsKey] === 'undefined'
   ) ? false : topPetitionsState[topPetitionsKey].map(petitionId => store.petitionStore.petitions[petitionId])

@@ -6,6 +6,8 @@
       "creator": {
         "name": "Shake it",
         "organization": "M.O.P.",
+        "organization_logo_image_url": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Mop-04-mika.jpg/220px-Mop-04-mika.jpg",
+        "organization_url": "https://en.wikipedia.org/wiki/M.O.P.",
         "custom_fields": {
           "may_optin": true
         }

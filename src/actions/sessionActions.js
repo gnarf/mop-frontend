@@ -21,7 +21,9 @@ export function unRecognize() {
 
 export function loadUserSession() {
   return (dispatch) => {
-    fetch(`${Config.API_URI}/api/v1/user/session.json`)
+    fetch(`${Config.API_URI}/api/v1/user/session.json`, {
+      credentials: 'include'
+    })
     .then(
       (response) => response.json().then((json) => {
         dispatch({

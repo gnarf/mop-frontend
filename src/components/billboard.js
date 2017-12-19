@@ -1,8 +1,10 @@
 import React from 'react'
 import Video from './video'
 
+// to fix font size issue for red button font in chrome browser
+
 const billboardButton = {
-  fontSize: '90%'
+  fontSize: '99%'
 }
 
 // TODO: make start a petition a <Link>

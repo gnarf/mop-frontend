@@ -4,7 +4,7 @@ import { connect } from 'react-redux'
 
 import NavLink from './nav-link'
 
-const Nav = ({ user }) => {
+const Nav = ({ user, nav }) => {
   const userLinks = (
     <div className='pull-right bump-top-1 span-7 top-menu'>
       <ul className='nav collapse nav-collapse'>
@@ -28,12 +28,17 @@ const Nav = ({ user }) => {
   )
 
   const userDashboardLink = (
-    <a className='icon-link-narrow icon-managepetitions' href='http://petitions.moveon.org/dashboard.html?source=topnav'> {`${user.given_name}'s`} Dashboard</a>
+    <a className='icon-link-narrow icon-managepetitions' href='http://petitions.moveon.org/dashboard.html?source=topnav'> {`${user.given_name}&#39;s`} Dashboard</a>
   )
 
   const guestDashboardLink = (
     <a className='icon-link-narrow icon-managepetitions' href='http://petitions.moveon.org/dashboard.html?source=topnav'>Manage Petitions</a>
   )
+
+  const partnerLogoLinks = (
+    (nav.partnerCobrand)
+      ? (<a href={nav.partnerCobrand.url}><img className='org_logo' src={nav.partnerCobrand.logo} alt={nav.partnerCobrand.name} /></a>
+        ) : null)
 
   return (
     <div>
@@ -50,7 +55,9 @@ const Nav = ({ user }) => {
           </div>
 
           <div className='pull-left top-icons hidden-phone'>
-            <div className='pull-left span2 petitions-partner-logo bump-top-1 margin-right-2 hidden-phone'></div>
+            <div className='pull-left span2 petitions-partner-logo bump-top-1 margin-right-2 hidden-phone'>
+              {partnerLogoLinks}
+            </div>
             <a className='icon-link-narrow icon-start' href='http://petitions.moveon.org/create_start.html?source=topnav'>Start a petition</a>
             {user.given_name ? userDashboardLink : guestDashboardLink}
           </div>
@@ -71,6 +78,7 @@ const Nav = ({ user }) => {
       <div className='container visible-phone'>
         <div className='row pull-left'>
           <div className='pull-left span2 petitions-partner-logo bump-top-1 margin-right-2'>
+            {partnerLogoLinks}
           </div>
         </div>
       </div>
@@ -79,12 +87,14 @@ const Nav = ({ user }) => {
 }
 
 Nav.propTypes = {
-  user: PropTypes.object
+  user: PropTypes.object,
+  nav: PropTypes.object
 }
 
 function mapStateToProps(store) {
   return {
-    user: store.userStore
+    user: store.userStore,
+    nav: store.navStore
   }
 }
 
