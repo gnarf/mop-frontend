@@ -47,7 +47,8 @@ Home.propTypes = {
 }
 
 Home.defaultProps = {
-  params: {}
+  params: {},
+  org: {}
 }
 
 function mapStateToProps(state, ownProps) {
@@ -57,3 +58,5 @@ function mapStateToProps(state, ownProps) {
 }
 
 export default connect(mapStateToProps)(Home)
+
+export const WrappedComponent = Home
