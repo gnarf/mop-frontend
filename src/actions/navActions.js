@@ -3,7 +3,6 @@ import { navOrg } from '../selectors/nav'
 
 import Config from '../config.js'
 
-
 export const actionTypes = {
   FETCH_ORG_REQUEST: 'FETCH_ORG_REQUEST',
   FETCH_ORG_SUCCESS: 'FETCH_ORG_SUCCESS',
