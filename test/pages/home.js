@@ -22,6 +22,16 @@ describe('<Home />', () => {
     expect(context.find(BillBoard)).to.have.length(1)
   })
 
+  it('does not render billboard when organization', () => {
+    const context = shallow(<Home params={{ organization: 'mop' }} />)
+    expect(context.find(BillBoard)).to.have.length(0)
+  })
+
+  it('renders billboard for "pac" organization', () => {
+    const context = shallow(<Home params={{ organization: 'pac' }} />)
+    expect(context.find(BillBoard)).to.have.length(1)
+  })
+
   it('renders a searchbar', () => {
     const context = shallow(<Home />)
     expect(context.find(SearchBar)).to.have.length(1)
@@ -30,6 +40,13 @@ describe('<Home />', () => {
   it('renders a recent victory list inside .front-content', () => {
     const context = shallow(<Home />)
     expect(context.find('.front-content').find(RecentVictoryList)).to.have.length(1)
+  })
+
+  it('does not render org header if no organization, or organization pac', () => {
+    const context = shallow(<Home />)
+    const pacContext = shallow(<Home params={{ organization: 'pac' }} />)
+    expect(context.find('.organization-header')).to.have.length(0)
+    expect(pacContext.find('.organization-header'), 'pac').to.have.length(0)
   })
 
   it('renders org content', () => {
