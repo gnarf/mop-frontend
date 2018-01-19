@@ -46,9 +46,13 @@ Home.propTypes = {
   params: PropTypes.object
 }
 
+Home.defaultProps = {
+  params: {}
+}
+
 function mapStateToProps(state, ownProps) {
   return {
-    org: navOrg(state, ownProps.params.organization)
+    org: navOrg(state, ownProps.params.organization) || {}
   }
 }
 
