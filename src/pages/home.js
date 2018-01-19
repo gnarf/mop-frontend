@@ -9,24 +9,33 @@ import SearchBar from '../components/searchbar'
 import RecentVictoryList from '../components/recentvictory.js'
 import TopPetitions from '../components/top-petitions'
 
-const Home = ({ params, org }) => {
-  const { organization } = params
+const Home = ({ params: { organization }, org }) => {
   const isOrganization = Boolean(organization && organization !== 'pac')
+  const notOrganization = !isOrganization
   const isPac = (organization === 'pac' || (!isOrganization && Config.ENTITY === 'pac'))
+
+  // Pull the properties from the organization object
+  // use a default description if none is defined.
+  const {
+    // orgName = org.organization || params.organization
+    organization: orgName = organization,
+    description = `${orgName} is a MoveOn MegaPartner, an invite-only program that lets a partner organization&#39;s members and activists set up their own MoveOn petitions in partnership with the original organization.`
+  } = org
+
   return (
     <div className='moveon-petitions container background-moveon-white bump-top-1'>
-      {isOrganization ? null : <BillBoard />}
+      {notOrganization && <BillBoard />}
       <SearchBar />
 
-      {isOrganization
-       ? (
+      {isOrganization && (
         <div className='organization-header'>
-          <h2>{org.organization}</h2>
-          {org.description || `${org.organization} is a MoveOn MegaPartner, an invite-only program that lets a partner organization&#39;s members and activists set up their own MoveOn petitions in partnership with the original organization.`}
-          <p className='pull-right'><a href='create_start.html' className='button background-moveon-bright-red'>Create a petition</a></p>
+          <h2>{orgName}</h2>
+          {description}
+          <p className='pull-right'>
+            <a href='create_start.html' className='button background-moveon-bright-red'>Create a petition</a>
+          </p>
         </div>
-       ) : null
-      }
+       )}
 
       <div className='row front-content'>
         <TopPetitions
@@ -35,7 +44,7 @@ const Home = ({ params, org }) => {
           fullWidth={isOrganization}
           source='homepage'
         />
-        {isOrganization ? null : <RecentVictoryList />}
+        {notOrganization && <RecentVictoryList />}
       </div>
     </div>
   )
