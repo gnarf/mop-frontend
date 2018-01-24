@@ -18,7 +18,8 @@ describe('nav reducer', () => {
       partnerCobrand: null
     })
     expect(orgCobrand(defaultState, 'test'), 'orgCobrand test').to.equal(undefined)
-    expect(orgCobrand(defaultState), 'orgCobrand no slug').to.equal(undefined)
+    // this inconsistency in returns seems a bit strange, should we change reducer to return undefined?
+    expect(orgCobrand(defaultState), 'orgCobrand no slug').to.equal(null)
   })
 
   it('orgCobrand selector', () => {
