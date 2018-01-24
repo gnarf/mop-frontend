@@ -17,6 +17,8 @@ describe('nav reducer', () => {
       orgs: {},
       partnerCobrand: null
     })
+    expect(orgCobrand(defaultState, 'test'), 'orgCobrand test').to.equal(undefined)
+    expect(orgCobrand(defaultState), 'orgCobrand no slug').to.equal(undefined)
   })
 
   it('orgCobrand selector', () => {
