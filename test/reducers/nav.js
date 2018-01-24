@@ -1,20 +1,39 @@
 import { expect } from 'chai'
-import reducer from '../../src/reducers/nav'
+import reducer from '../../src/reducers'
+import { navOrg, cobrand, orgCobrand } from '../../src/selectors/nav'
 
 import { actionTypes as navActionTypes } from '../../src/actions/navActions.js'
 import { actionTypes as petitionActionTypes } from '../../src/actions/petitionActions.js'
 
-const { FETCH_PETITON_SUCCESS, FETCH_TOP_PETITIONS_SUCCESS } = petitionActionTypes
+const { FETCH_PETITION_SUCCESS, FETCH_TOP_PETITIONS_SUCCESS } = petitionActionTypes
 const { FETCH_ORG_SUCCESS } = navActionTypes
 
 const defaultState = reducer(undefined, {})
 
 describe('nav reducer', () => {
   it('default state', () => {
-    expect(defaultState).to.deep.equal({
+    // not using a selector, no selector should ever point here anyway
+    expect(defaultState.nav).to.deep.equal({
       orgs: {},
       partnerCobrand: null
     })
+  })
+
+  it('orgCobrand selector', () => {
+    const org = { test: true }
+    const sponsor = { logo_image_url: 'yes.jpg', organization: 'Move On', browser_url: 'http://' }
+
+    let state = reducer(undefined, { type: FETCH_ORG_SUCCESS, slug: 'test', org })
+    state = reducer(state, { type: FETCH_PETITION_SUCCESS, petition: { _embedded: { sponsor } } })
+
+    expect(orgCobrand(state))
+      .to.deep.equal(sponsor)
+
+    expect(orgCobrand(state, 'test'))
+      .to.deep.equal(org)
+
+    expect(orgCobrand(state, 'notthere'))
+      .to.equal(undefined)
   })
 
   it('adds orgs to table when FETCH_ORG_SUCCESS', () => {
@@ -26,19 +45,19 @@ describe('nav reducer', () => {
     }
 
     let state = reducer(defaultState, action)
-    expect(state.orgs.test, 'orgs.test saved')
+    expect(navOrg(state, action.slug), 'navOrg test')
       .to.equal(action.org)
 
     state = reducer(state, { type, slug: 'test2', org: 'test2' })
-    expect(state.orgs.test2, 'orgs.test2 saved')
+    expect(navOrg(state, 'test2'), 'navOrg test2 saved')
       .to.equal('test2')
-    expect(state.orgs.test, 'orgs.test unchanged')
+    expect(navOrg(state, 'test'), 'navOrg test unchanged')
       .to.equal(action.org)
 
     state = reducer(state, { type, slug: 'test', org: 'test' })
-    expect(state.orgs.test, 'orgs.test overwritten')
+    expect(navOrg(state, 'test'), 'orgs.test overwritten')
       .to.equal('test')
-    expect(state.orgs.test2, 'orgs.test2 unchanged')
+    expect(navOrg(state, 'test2'), 'orgs.test2 unchanged')
       .to.equal('test2')
   })
 
@@ -50,30 +69,30 @@ describe('nav reducer', () => {
     describe(name, () => {
       it('sets cobrand using sponsor', () => {
         const state = reducer(defaultState, actionCreator({ _embedded: { sponsor: brandWithFluff } }))
-        expect(state.partnerCobrand).to.deep.equal(brandOnly)
+        expect(cobrand(state)).to.deep.equal(brandOnly)
       })
 
       it('sets cobrand using creator', () => {
         const state = reducer(defaultState, actionCreator({ _embedded: { creator: brandWithFluff } }))
-        expect(state.partnerCobrand).to.deep.equal(brandOnly)
+        expect(cobrand(state)).to.deep.equal(brandOnly)
       })
 
       it('sets cobrand using sponsor when both sponsor and creator', () => {
         const state = reducer(defaultState, actionCreator({ _embedded: { sponsor: brandWithFluff, creator: wrongBrand } }))
-        expect(state.partnerCobrand).to.deep.equal(brandOnly)
+        expect(cobrand(state)).to.deep.equal(brandOnly)
       })
 
       it('sets to null after a new action without sponsor or creator', () => {
         const filledState = reducer(defaultState, actionCreator({ _embedded: { creator: brandWithFluff } }))
 
         const state = reducer(filledState, actionCreator({}))
-        expect(state.partnerCobrand).to.deep.equal(null)
+        expect(cobrand(state)).to.deep.equal(null)
       })
     })
   }
 
   testPetitionVariants('FETCH_PETITION_SUCCESS', petition => ({
-    type: FETCH_PETITON_SUCCESS,
+    type: FETCH_PETITION_SUCCESS,
     petition
   }))
 

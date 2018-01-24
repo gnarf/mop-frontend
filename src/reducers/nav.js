@@ -2,7 +2,7 @@ import { combineReducers } from 'redux'
 import { actionTypes as navActionTypes } from '../actions/navActions.js'
 import { actionTypes as petitionActionTypes } from '../actions/petitionActions.js'
 
-const { FETCH_PETITON_SUCCESS, FETCH_TOP_PETITIONS_SUCCESS } = petitionActionTypes
+const { FETCH_PETITION_SUCCESS, FETCH_TOP_PETITIONS_SUCCESS } = petitionActionTypes
 const { FETCH_ORG_SUCCESS } = navActionTypes
 
 /* nav state:
@@ -31,7 +31,7 @@ const getCobrandFromPetition = (petition = {}) => {
 
 function partnerCobrand(state = null, action) {
   switch (action.type) {
-    case FETCH_PETITON_SUCCESS:
+    case FETCH_PETITION_SUCCESS:
       return getCobrandFromPetition(action.petition)
     case FETCH_TOP_PETITIONS_SUCCESS:
       return getCobrandFromPetition(action.petitions[0])
